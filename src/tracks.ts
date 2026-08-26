@@ -1,4 +1,4 @@
-type Track = {
+export type Track = {
     id: number;
     title: string;
     album?: string;
@@ -14,3 +14,8 @@ export const tracks: Track[] = [
     {id: 3, title: "SoulFood", album: "InLovingMemory", artist: "Bones", genre: "rap", tags: ["rap", "cloud"]},
     {id: 4, title: "Ginseng Strip 2002", artist: "Yung Lean", genre: "rap", tags: ["rap", "cloud"], bpm: 115},
 ];
+
+export function nextId(): number {
+    if (!tracks.length) return 1
+    return Math.max(...tracks.map((t) => t.id)) + 1
+}
