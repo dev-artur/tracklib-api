@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import { tracks, type Track, nextId } from './tracks.js';
+import { type TrackInput } from './tracks.js';
 import { pool } from "./db.js";
 
 const createTrackSchema = {
@@ -27,8 +27,8 @@ const idParamSchema = {
 } as const;
 
 const updateTrackSchema = {
-  params: idParamSchema.params,
-  body: createTrackSchema.body,
+    params: idParamSchema.params,
+    body: createTrackSchema.body,
 } as const;
 
 const app = Fastify({ 
@@ -56,31 +56,38 @@ app.get("/tracks/:id", { schema: idParamSchema }, async (request, reply) => {
 
 app.delete("/tracks/:id", { schema: idParamSchema }, async (request, reply) => {
     const { id } = request.params as { id: number };
-    const index = tracks.findIndex((t) => t.id === id);
-    if (index === -1) {
+    const result = await pool.query("DELETE FROM tracks WHERE id = $1", [id]);
+    if (!result.rowCount) {
         return reply.code(404).send({ error: "Track not found" });
     }
-    tracks.splice(index, 1)
     return reply.code(204).send();
 });
 
 app.put("/tracks/:id", { schema: updateTrackSchema }, async (request, reply) => {
     const { id } = request.params as { id: number };
-    const index = tracks.findIndex((t) => t.id === id);
-    if (index === -1) {
+    const body = request.body as TrackInput;
+    const result = await pool.query(
+        `UPDATE tracks
+        SET title = $1, album = $2, artist = $3, bpm = $4, genre = $5, tags = $6
+        WHERE id = $7
+        RETURNING *;`,
+        [body.title, body.album ?? null, body.artist, body.bpm ?? null, body.genre, body.tags, id]
+    );
+    if (result.rows.length === 0) {
         return reply.code(404).send({ error: "Track not found" });
     }
-    const body = request.body as Omit<Track, "id">;
-    const newTrack: Track = { id, ...body };
-    tracks[index] = newTrack
-    return reply.code(200).send(newTrack);
+    return reply.code(200).send(result.rows[0]);
 });
 
 app.post("/tracks", { schema: createTrackSchema }, async (request, reply) => {
-  const body = request.body as Omit<Track, "id">;
-  const newTrack: Track = { id: nextId(), ...body };
-  tracks.push(newTrack);
-  return reply.code(201).send(newTrack);
+    const body = request.body as TrackInput;
+    const result = await pool.query(
+        `INSERT INTO tracks (title, album, artist, bpm, genre, tags)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *`,
+        [body.title, body.album ?? null, body.artist, body.bpm ?? null, body.genre, body.tags]
+    );
+    return reply.code(201).send(result.rows[0]);
 });
 
 const start = async () => {
