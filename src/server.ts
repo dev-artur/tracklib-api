@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import { tracks, type Track, nextId } from './tracks.js';
+import { pool } from "./db.js";
 
 const createTrackSchema = {
   body: {
@@ -40,16 +41,17 @@ app.get("/health", async () => {
 });
 
 app.get("/tracks", async () => {
-    return  { tracks: tracks };
+    const result = await pool.query("SELECT * FROM tracks ORDER BY id");
+    return { tracks: result.rows };
 });
 
 app.get("/tracks/:id", { schema: idParamSchema }, async (request, reply) => {
     const { id } = request.params as { id: number };
-    const track = tracks.find((t) => t.id === id);
-    if (!track) {
+    const result = await pool.query("SELECT * FROM tracks WHERE id = $1", [id]);
+    if (result.rows.length === 0) {
         return reply.code(404).send({ error: "Track not found" });
     }
-    return track
+    return result.rows[0]
 });
 
 app.delete("/tracks/:id", { schema: idParamSchema }, async (request, reply) => {
