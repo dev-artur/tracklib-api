@@ -4,6 +4,10 @@ import { pool } from "./db.js";
 
 const app = buildApp({ logger: false });
 
+if (!process.env.DATABASE_URL?.includes("_test")) {
+  throw new Error("Refusing to run integration tests against a non-test database");
+}
+
 beforeEach(async () => {
     await pool.query("TRUNCATE tracks RESTART IDENTITY");
 });
