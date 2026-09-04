@@ -20,17 +20,29 @@ describe("GET /tracks/abс", () => {
 
 describe("POST /tracks", () => {
   it("returns 400 when title is missing", async () => {
-    const res = await app.inject({ method: "POST", url: "/tracks", payload: {"artist":"test","genre":"test","tags":["test"]} });
+    const res = await app.inject({ 
+      method: "POST", 
+      url: "/tracks", 
+      payload: { artist: "test", genre: "test", tags: ["test"] }
+    });
     expect(res.statusCode).toBe(400);
     expect(res.json().message).toContain("title");
   });
   it("returns 400 when BPM exceeds the maximum", async () => {
-    const res = await app.inject({ method: "POST", url: "/tracks", payload: {"title":"test","artist":"test","genre":"test","tags":["test"],"bpm":500} });
+    const res = await app.inject({
+      method: "POST",
+      url: "/tracks",
+      payload: { title: "test", artist: "test", genre: "test", tags: ["test"], bpm: 500 }
+    });
     expect(res.statusCode).toBe(400);
     expect(res.json().message).toContain("bpm");
   });
   it("returns 400 when extra fields are included", async () => {
-    const res = await app.inject({ method: "POST", url: "/tracks", payload: {"title":"test","artist":"test","genre":"test","tags":["test"],"hacker":true} });
+    const res = await app.inject({
+      method: "POST",
+      url: "/tracks",
+      payload: { title: "test", artist: "test", genre: "test", tags: ["test"], hacker: true }
+    });
     expect(res.statusCode).toBe(400);
     expect(res.json().message).toContain("additional");
   });
