@@ -8,7 +8,7 @@ describe("formatDuration", () => {
   });
   it("formats minutes with remaining seconds", () => {
     const result = formatDuration(205);
-    expect(result).toBe("3:20");
+    expect(result).toBe("3:25");
   });
   it("formats minutes with the remaining seconds under 10", () => {
     const result = formatDuration(65);
