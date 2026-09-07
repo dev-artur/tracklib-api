@@ -70,7 +70,7 @@ export const TrackForm = ({ onCreated }: TrackFormProps) => {
                 </div>
             </div>
             <button type="submit">Add Track</button>
-            {error && <p className={styles.error}>{error}</p>}
+            {error && <p role="alert" className={styles.error}>{error}</p>}
         </form>
     );
 };
