@@ -25,6 +25,8 @@ npm run dev
 
 ## Tests
 
+How and why the project is tested — layers, data isolation, CI — is described in [TESTING.md](TESTING.md).
+
 ```bash
 npm test              # unit + integration (needs tracklib-db running)
 npm run test:ci       # with coverage threshold
